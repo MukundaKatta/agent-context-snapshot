@@ -334,6 +334,32 @@ def test_take_appending_to_original_list_does_not_affect_snapshot():
     assert snap.message_count() == 1
 
 
+def test_take_deep_copies_nested_message_content():
+    store = SnapshotStore()
+    msgs = [{"role": "user", "content": [{"type": "text", "text": "original"}]}]
+    snap = store.take(msgs)
+    msgs[0]["content"][0]["text"] = "modified"
+    assert snap.messages[0]["content"][0]["text"] == "original"
+
+
+def test_take_deep_copies_nested_metadata():
+    store = SnapshotStore()
+    meta = {"config": {"temp": 0.7}}
+    snap = store.take([], metadata=meta)
+    meta["config"]["temp"] = 9.9
+    assert snap.metadata["config"]["temp"] == 0.7
+
+
+def test_to_dict_deep_copies_nested_messages():
+    snap = ContextSnapshot(
+        index=0,
+        messages=[{"role": "user", "content": [{"type": "text", "text": "hi"}]}],
+    )
+    d = snap.to_dict()
+    d["messages"][0]["content"][0]["text"] = "mutated"
+    assert snap.messages[0]["content"][0]["text"] == "hi"
+
+
 # ---------------------------------------------------------------------------
 # Diff
 # ---------------------------------------------------------------------------

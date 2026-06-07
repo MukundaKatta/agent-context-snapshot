@@ -30,6 +30,7 @@ Example::
 
 from __future__ import annotations
 
+import copy
 import json
 import time
 from dataclasses import dataclass, field
@@ -72,8 +73,8 @@ class ContextSnapshot:
             "index": self.index,
             "label": self.label,
             "message_count": self.message_count(),
-            "messages": [dict(m) for m in self.messages],
-            "metadata": dict(self.metadata),
+            "messages": copy.deepcopy(self.messages),
+            "metadata": copy.deepcopy(self.metadata),
             "timestamp": self.timestamp,
             "turn": self.turn,
         }
@@ -212,9 +213,9 @@ class SnapshotStore:
         """
         snap = ContextSnapshot(
             index=len(self._snapshots),
-            messages=[dict(m) for m in messages],
+            messages=copy.deepcopy(messages),
             label=label,
-            metadata=dict(metadata) if metadata is not None else {},
+            metadata=copy.deepcopy(metadata) if metadata is not None else {},
             timestamp=timestamp if timestamp is not None else time.time(),
             turn=turn,
         )
